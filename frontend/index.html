@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Subscription Management Dashboard</title>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div id="app">
+      <header class="header">
+        <div class="header-content">
+          <h1><i class="fas fa-credit-card"></i> Subscription Dashboard</h1>
+          <div class="header-actions">
+            <a href="./landing.html" class="btn btn-outline">
+              <i class="fas fa-home"></i> Home
+            </a>
+            <div class="connection-status" id="connectionStatus">
+              <i class="fas fa-circle"></i> Connecting...
+            </div>
+            <button class="btn btn-primary" id="addSubscriptionBtn">
+              <i class="fas fa-plus"></i> Add Subscription
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main class="main-content">
+        <!-- Analytics Cards -->
+        <section class="analytics-section">
+          <div class="analytics-grid">
+            <div class="metric-card revenue">
+              <div class="metric-icon">
+                <i class="fas fa-dollar-sign"></i>
+              </div>
+              <div class="metric-content">
+                <h3>Monthly Revenue</h3>
+                <div class="metric-value" id="monthlyRevenue">$0</div>
+                <div class="metric-change positive">
+                  <i class="fas fa-arrow-up"></i> +12.5%
+                </div>
+              </div>
+            </div>
+
+            <div class="metric-card subscribers">
+              <div class="metric-icon">
+                <i class="fas fa-users"></i>
+              </div>
+              <div class="metric-content">
+                <h3>Active Subscribers</h3>
+                <div class="metric-value" id="activeSubscribers">0</div>
+                <div class="metric-change positive">
+                  <i class="fas fa-arrow-up"></i> +8.2%
+                </div>
+              </div>
+            </div>
+
+            <div class="metric-card churn">
+              <div class="metric-icon">
+                <i class="fas fa-chart-line-down"></i>
+              </div>
+              <div class="metric-content">
+                <h3>Churn Rate</h3>
+                <div class="metric-value" id="churnRate">0%</div>
+                <div class="metric-change negative">
+                  <i class="fas fa-arrow-down"></i> -2.1%
+                </div>
+              </div>
+            </div>
+
+            <div class="metric-card arpu">
+              <div class="metric-icon">
+                <i class="fas fa-chart-bar"></i>
+              </div>
+              <div class="metric-content">
+                <h3>ARPU</h3>
+                <div class="metric-value" id="arpu">$0</div>
+                <div class="metric-change positive">
+                  <i class="fas fa-arrow-up"></i> +5.3%
+                </div>
+              </div>
+            </div>
+
+            <div class="metric-card trials">
+              <div class="metric-icon">
+                <i class="fas fa-clock"></i>
+              </div>
+              <div class="metric-content">
+                <h3>Trial Users</h3>
+                <div class="metric-value" id="trialUsers">0</div>
+                <div class="metric-change neutral">
+                  <i class="fas fa-minus"></i> 0%
+                </div>
+              </div>
+            </div>
+
+            <div class="metric-card new-today">
+              <div class="metric-icon">
+                <i class="fas fa-user-plus"></i>
+              </div>
+              <div class="metric-content">
+                <h3>New Today</h3>
+                <div class="metric-value" id="newToday">0</div>
+                <div class="metric-change positive">
+                  <i class="fas fa-arrow-up"></i> +15.7%
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Charts Section -->
+        <section class="charts-section">
+          <div class="charts-grid">
+            <div class="chart-card">
+              <div class="chart-header">
+                <h3><i class="fas fa-chart-area"></i> Revenue Trends</h3>
+                <div class="chart-controls">
+                  <select id="revenueTimeframe">
+                    <option value="7d">Last 7 days</option>
+                    <option value="30d">Last 30 days</option>
+                    <option value="90d">Last 90 days</option>
+                  </select>
+                </div>
+              </div>
+              <canvas id="revenueChart"></canvas>
+            </div>
+
+            <div class="chart-card">
+              <div class="chart-header">
+                <h3><i class="fas fa-pie-chart"></i> Subscription Status</h3>
+              </div>
+              <canvas id="statusChart"></canvas>
+            </div>
+          </div>
+        </section>
+
+        <!-- Subscriptions Table -->
+        <section class="table-section">
+          <div class="table-card">
+            <div class="table-header">
+              <h3><i class="fas fa-table"></i> Recent Subscriptions</h3>
+              <div class="table-controls">
+                <div class="search-box">
+                  <i class="fas fa-search"></i>
+                  <input
+                    type="text"
+                    id="searchInput"
+                    placeholder="Search subscriptions..."
+                  />
+                </div>
+                <select id="statusFilter">
+                  <option value="">All Status</option>
+                  <option value="active">Active</option>
+                  <option value="trial">Trial</option>
+                  <option value="cancelled">Cancelled</option>
+                  <option value="expired">Expired</option>
+                </select>
+              </div>
+            </div>
+            <div class="table-container">
+              <table id="subscriptionsTable">
+                <thead>
+                  <tr>
+                    <th>User</th>
+                    <th>Plan</th>
+                    <th>Status</th>
+                    <th>Amount</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="subscriptionsTableBody">
+                  <!-- Dynamic content -->
+                </tbody>
+              </table>
+            </div>
+            <div class="table-pagination">
+              <div class="pagination-info">
+                Showing <span id="paginationInfo">0-0 of 0</span> subscriptions
+              </div>
+              <div class="pagination-controls">
+                <button id="prevPage" class="btn btn-outline">
+                  <i class="fas fa-chevron-left"></i> Previous
+                </button>
+                <span id="pageNumbers"></span>
+                <button id="nextPage" class="btn btn-outline">
+                  Next <i class="fas fa-chevron-right"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <!-- Modal for Add/Edit Subscription -->
+    <div id="subscriptionModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="modalTitle">Add New Subscription</h3>
+          <button class="modal-close" id="closeModal">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form id="subscriptionForm">
+            <div class="form-group">
+              <label for="userName">User Name</label>
+              <input type="text" id="userName" required />
+            </div>
+            <div class="form-group">
+              <label for="userEmail">User Email</label>
+              <input type="email" id="userEmail" required />
+            </div>
+            <div class="form-group">
+              <label for="planSelect">Plan</label>
+              <select id="planSelect" required>
+                <!-- Dynamic options -->
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="status">Status</label>
+              <select id="status" required>
+                <option value="active">Active</option>
+                <option value="trial">Trial</option>
+                <option value="cancelled">Cancelled</option>
+                <option value="expired">Expired</option>
+              </select>
+            </div>
+            <div class="form-actions">
+              <button type="button" id="cancelForm" class="btn btn-outline">
+                Cancel
+              </button>
+              <button type="submit" class="btn btn-primary">
+                Save Subscription
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
