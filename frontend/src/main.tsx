@@ -74,7 +74,7 @@ class SubscriptionDashboard {
     try {
       // Load plans
       const plansResponse = await axios.get<Plan[]>(
-        "http://localhost:8080/api/plans"
+        "https://subscription-management-3.onrender.com/api/plans"
       );
       this.plans = plansResponse.data;
       this.populatePlanSelect();
@@ -84,7 +84,7 @@ class SubscriptionDashboard {
 
       // Load analytics
       const analyticsResponse = await axios.get<Analytics>(
-        "http://localhost:8080/api/analytics"
+        "https://subscription-management-3.onrender.com/api/analytics"
       );
       this.updateAnalytics(analyticsResponse.data);
     } catch (error) {
@@ -101,7 +101,7 @@ class SubscriptionDashboard {
         ? `&search=${encodeURIComponent(this.searchQuery)}`
         : "";
       const response = await axios.get(
-        `http://localhost:8080/api/subscriptions?page=${this.currentPage}&limit=${this.itemsPerPage}${statusQuery}${searchQuery}`
+        `https://subscription-management-3.onrender.com/api/subscriptions?page=${this.currentPage}&limit=${this.itemsPerPage}${statusQuery}${searchQuery}`
       );
       this.subscriptions = response.data.subscriptions || [];
       this.totalItems = response.data.total || 0;
@@ -117,7 +117,7 @@ class SubscriptionDashboard {
     statusElement.textContent = "Connecting...";
     statusElement.className = "connection-status connecting";
 
-    this.ws = new WebSocket("ws://localhost:8080/ws");
+    this.ws = new WebSocket("wss://subscription-management-3.onrender.com/ws");
 
     this.ws.onopen = () => {
       console.log("Connected to WebSocket");
@@ -454,7 +454,10 @@ class SubscriptionDashboard {
     };
 
     try {
-      await axios.post("http://localhost:8080/api/subscriptions", subscription);
+      await axios.post(
+        "https://subscription-management-3.onrender.com/api/subscriptions",
+        subscription
+      );
       this.hideModal();
       this.loadSubscriptions();
     } catch (error) {
@@ -483,7 +486,9 @@ window.editSubscription = (id: number) => {
 window.deleteSubscription = async (id: number) => {
   if (confirm("Are you sure you want to delete this subscription?")) {
     try {
-      await axios.delete(`http://localhost:8080/api/subscriptions/${id}`);
+      await axios.delete(
+        `https://subscription-management-3.onrender.com/api/subscriptions/${id}`
+      );
       // Reload subscriptions
       window.location.reload();
     } catch (error) {
