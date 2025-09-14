@@ -5,6 +5,7 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
@@ -151,8 +152,12 @@ func main() {
 	go handleMessages()
 	go generateRealtimeData()
 
-	log.Println("Subscription Management Server starting on :8080")
-	log.Fatal(http.ListenAndServe(":8080", handler))
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+	log.Printf("Subscription Management Server starting on :%s", port)
+	log.Fatal(http.ListenAndServe(":"+port, handler))
 }
 
 func getSubscriptions(w http.ResponseWriter, r *http.Request) {
@@ -354,24 +359,21 @@ func generateRealtimeData() {
 	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
 
-	for {
-		select {
-		case <-ticker.C:
-			analytics := calculateAnalytics()
+	for range ticker.C {
+		analytics := calculateAnalytics()
 
-			// Get recent subscriptions (last 10)
-			recentSubs := subscriptions
-			if len(subscriptions) > 10 {
-				recentSubs = subscriptions[len(subscriptions)-10:]
-			}
-
-			data := RealtimeData{
-				Analytics:     analytics,
-				Subscriptions: recentSubs,
-				Timestamp:     time.Now().Format("15:04:05"),
-			}
-
-			broadcast <- data
+		// Get recent subscriptions (last 10)
+		recentSubs := subscriptions
+		if len(subscriptions) > 10 {
+			recentSubs = subscriptions[len(subscriptions)-10:]
 		}
+
+		data := RealtimeData{
+			Analytics:     analytics,
+			Subscriptions: recentSubs,
+			Timestamp:     time.Now().Format("15:04:05"),
+		}
+
+		broadcast <- data
 	}
 }
