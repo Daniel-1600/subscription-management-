@@ -54,8 +54,8 @@ interface RealtimeData {
 class SubscriptionDashboard {
   private ws: WebSocket | null = null;
   private reconnectInterval = 3000;
-  private revenueChart: Chart | null = null;
   private statusChart: Chart | null = null;
+  private revenueChart: Chart | null = null;
   private subscriptions: Subscription[] = [];
   private plans: Plan[] = [];
   private currentPage = 1;
@@ -95,8 +95,14 @@ class SubscriptionDashboard {
 
   private async loadSubscriptions() {
     try {
+      const statusQuery = this.statusFilter
+        ? `&status=${this.statusFilter}`
+        : "";
+      const searchQuery = this.searchQuery
+        ? `&search=${encodeURIComponent(this.searchQuery)}`
+        : "";
       const response = await axios.get(
-        `http://localhost:8080/api/subscriptions?page=${this.currentPage}&limit=${this.itemsPerPage}`
+        `http://localhost:8080/api/subscriptions?page=${this.currentPage}&limit=${this.itemsPerPage}${statusQuery}${searchQuery}`
       );
       this.subscriptions = response.data.subscriptions || [];
       this.totalItems = response.data.total || 0;

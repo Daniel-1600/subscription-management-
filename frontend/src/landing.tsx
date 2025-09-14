@@ -4,7 +4,7 @@ import { Chart, registerables } from "chart.js";
 Chart.register(...registerables);
 
 class LandingPage {
-  private previewChart: Chart | null = null;
+  // Removed unused previewChart property
 
   constructor() {
     this.initializeChart();
@@ -16,7 +16,7 @@ class LandingPage {
     const canvas = document.getElementById("previewChart") as HTMLCanvasElement;
     if (!canvas) return;
 
-    this.previewChart = new Chart(canvas, {
+    new Chart(canvas, {
       type: "line",
       data: {
         labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
@@ -114,9 +114,11 @@ class LandingPage {
 
     // Smooth scrolling for anchor links
     document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
-      anchor.addEventListener("click", function (e) {
+      anchor.addEventListener("click", function (e: Event) {
         e.preventDefault();
-        const target = document.querySelector(this.getAttribute("href") || "");
+        const href =
+          (e.currentTarget as HTMLAnchorElement).getAttribute("href") || "";
+        const target = document.querySelector(href);
         if (target) {
           target.scrollIntoView({
             behavior: "smooth",
