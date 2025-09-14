@@ -55,7 +55,6 @@ class SubscriptionDashboard {
   private ws: WebSocket | null = null;
   private reconnectInterval = 3000;
   private statusChart: Chart | null = null;
-  private revenueChart: Chart | null = null;
   private subscriptions: Subscription[] = [];
   private plans: Plan[] = [];
   private currentPage = 1;
@@ -158,7 +157,7 @@ class SubscriptionDashboard {
     const revenueCtx = document.getElementById(
       "revenueChart"
     ) as HTMLCanvasElement;
-    this.revenueChart = new Chart(revenueCtx, {
+    new Chart(revenueCtx, {
       type: "line",
       data: {
         labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
@@ -196,8 +195,8 @@ class SubscriptionDashboard {
             beginAtZero: true,
             ticks: {
               color: "#94a3b8",
-              callback: function (value) {
-                return "$" + value.toLocaleString();
+              callback: function (value: string | number) {
+                return "$" + (value as number).toLocaleString();
               },
             },
             grid: {
@@ -207,7 +206,6 @@ class SubscriptionDashboard {
         },
       },
     });
-
     // Status Chart
     const statusCtx = document.getElementById(
       "statusChart"
@@ -470,11 +468,19 @@ document.addEventListener("DOMContentLoaded", () => {
   new SubscriptionDashboard();
 });
 
+// Extend Window interface to include global functions
+declare global {
+  interface Window {
+    editSubscription: (id: number) => void;
+    deleteSubscription: (id: number) => Promise<void>;
+  }
+}
+
 // Global functions for table actions
-(window as any).editSubscription = (id: number) => {
+window.editSubscription = (id: number) => {
   console.log("Edit subscription:", id);
 };
-(window as any).deleteSubscription = async (id: number) => {
+window.deleteSubscription = async (id: number) => {
   if (confirm("Are you sure you want to delete this subscription?")) {
     try {
       await axios.delete(`http://localhost:8080/api/subscriptions/${id}`);

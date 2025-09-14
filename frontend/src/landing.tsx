@@ -4,8 +4,6 @@ import { Chart, registerables } from "chart.js";
 Chart.register(...registerables);
 
 class LandingPage {
-  // Removed unused previewChart property
-
   constructor() {
     this.initializeChart();
     this.setupEventListeners();
@@ -114,18 +112,20 @@ class LandingPage {
 
     // Smooth scrolling for anchor links
     document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
-      anchor.addEventListener("click", function (e: Event) {
-        e.preventDefault();
-        const href =
-          (e.currentTarget as HTMLAnchorElement).getAttribute("href") || "";
-        const target = document.querySelector(href);
-        if (target) {
-          target.scrollIntoView({
-            behavior: "smooth",
-            block: "start",
-          });
+      anchor.addEventListener(
+        "click",
+        function (this: HTMLAnchorElement, e: Event) {
+          e.preventDefault();
+          const href = this.getAttribute("href") || "";
+          const target = document.querySelector(href);
+          if (target) {
+            target.scrollIntoView({
+              behavior: "smooth",
+              block: "start",
+            });
+          }
         }
-      });
+      );
     });
 
     // Navbar background on scroll
