@@ -83,3 +83,6 @@ go.work
 # Temporary files
 tmp/
 temp/
+
+# Go binaries
+backend/main
