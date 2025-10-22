@@ -11,6 +11,7 @@ export default defineConfig({
       input: {
         main: resolve(__dirname, "index.html"),
         landing: resolve(__dirname, "landing.html"),
+        recruiters: resolve(__dirname, "recruiters.html"),
       },
     },
   },
