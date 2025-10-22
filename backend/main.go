@@ -55,6 +55,22 @@ type Analytics struct {
 	CancellationsToday     int     `json:"cancellations_today"`
 }
 
+type Recruiter struct {
+	ID          int       `json:"id"`
+	Name        string    `json:"name"`
+	Email       string    `json:"email"`
+	Company     string    `json:"company"`
+	Position    string    `json:"position"`
+	TechStack   []string  `json:"tech_stack"`   // e.g., ["JavaScript", "Golang"]
+	Remote      bool      `json:"remote"`
+	Location    string    `json:"location"`
+	Description string    `json:"description"`
+	ContactDate time.Time `json:"contact_date"`
+	Status      string    `json:"status"`     // active, contacted, interview, hired, rejected
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+}
+
 type RealtimeData struct {
 	Analytics     Analytics      `json:"analytics"`
 	Subscriptions []Subscription `json:"recent_subscriptions"`
@@ -70,6 +86,7 @@ var upgrader = websocket.Upgrader{
 var (
 	subscriptions []Subscription
 	plans         []Plan
+	recruiters    []Recruiter
 	clients       = make(map[*websocket.Conn]bool)
 	broadcast     = make(chan RealtimeData)
 )
@@ -86,6 +103,9 @@ func init() {
 
 	// Generate sample subscriptions
 	generateSampleSubscriptions()
+	
+	// Generate sample recruiters
+	generateSampleRecruiters()
 }
 
 func generateSampleSubscriptions() {
@@ -124,6 +144,43 @@ func generateSampleSubscriptions() {
 	}
 }
 
+func generateSampleRecruiters() {
+	companies := []string{"TechCorp", "InnovateSoft", "DevSolutions", "CodeMasters", "CloudTech", "DataDrive", "WebWorks", "AppGenius", "SoftwarePro", "DigitalEdge"}
+	positions := []string{"Backend Developer", "Frontend Developer", "Full Stack Developer", "Senior Engineer", "Lead Developer", "DevOps Engineer", "Software Architect"}
+	techStacks := [][]string{
+		{"JavaScript", "React", "Node.js"},
+		{"Golang", "Docker", "Kubernetes"},
+		{"JavaScript", "TypeScript", "Vue.js"},
+		{"Golang", "PostgreSQL", "Redis"},
+		{"JavaScript", "Angular", "Express"},
+		{"Golang", "gRPC", "MongoDB"},
+	}
+	locations := []string{"Remote - USA", "Remote - Europe", "Remote - Global", "Remote - APAC", "New York, NY", "San Francisco, CA", "Austin, TX", "Seattle, WA"}
+	statuses := []string{"active", "contacted", "interview", "rejected"}
+
+	for i := 1; i <= 30; i++ {
+		remote := i%3 != 0 // 2/3 of positions are remote
+		techStack := techStacks[rand.Intn(len(techStacks))]
+		
+		recruiter := Recruiter{
+			ID:          i,
+			Name:        "Recruiter " + strconv.Itoa(i),
+			Email:       "recruiter" + strconv.Itoa(i) + "@" + companies[rand.Intn(len(companies))] + ".com",
+			Company:     companies[rand.Intn(len(companies))],
+			Position:    positions[rand.Intn(len(positions))],
+			TechStack:   techStack,
+			Remote:      remote,
+			Location:    locations[rand.Intn(len(locations))],
+			Description: "Looking for talented developers to join our team. Great benefits and competitive salary.",
+			ContactDate: time.Now().AddDate(0, 0, -rand.Intn(30)),
+			Status:      statuses[rand.Intn(len(statuses))],
+			CreatedAt:   time.Now().AddDate(0, 0, -rand.Intn(60)),
+			UpdatedAt:   time.Now(),
+		}
+		recruiters = append(recruiters, recruiter)
+	}
+}
+
 func main() {
 	r := mux.NewRouter()
 
@@ -135,6 +192,13 @@ func main() {
 	r.HandleFunc("/api/subscriptions/{id}", deleteSubscription).Methods("DELETE")
 	r.HandleFunc("/api/plans", getPlans).Methods("GET")
 	r.HandleFunc("/api/analytics", getAnalytics).Methods("GET")
+	
+	// Recruiter routes
+	r.HandleFunc("/api/recruiters", getRecruiters).Methods("GET")
+	r.HandleFunc("/api/recruiters/{id}", getRecruiter).Methods("GET")
+	r.HandleFunc("/api/recruiters", createRecruiter).Methods("POST")
+	r.HandleFunc("/api/recruiters/{id}", updateRecruiter).Methods("PUT")
+	r.HandleFunc("/api/recruiters/{id}", deleteRecruiter).Methods("DELETE")
 
 	// WebSocket route
 	r.HandleFunc("/ws", handleWebSocket)
@@ -376,4 +440,145 @@ func generateRealtimeData() {
 
 		broadcast <- data
 	}
+}
+
+func getRecruiters(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	// Get query parameters for filtering
+	remoteFilter := r.URL.Query().Get("remote")
+	techStackFilter := r.URL.Query().Get("tech_stack")
+	statusFilter := r.URL.Query().Get("status")
+
+	// Filter recruiters based on query parameters
+	filteredRecruiters := []Recruiter{}
+	for _, recruiter := range recruiters {
+		// Filter by remote
+		if remoteFilter != "" {
+			isRemote := remoteFilter == "true"
+			if recruiter.Remote != isRemote {
+				continue
+			}
+		}
+
+		// Filter by tech stack
+		if techStackFilter != "" {
+			hasTech := false
+			for _, tech := range recruiter.TechStack {
+				if tech == techStackFilter {
+					hasTech = true
+					break
+				}
+			}
+			if !hasTech {
+				continue
+			}
+		}
+
+		// Filter by status
+		if statusFilter != "" && recruiter.Status != statusFilter {
+			continue
+		}
+
+		filteredRecruiters = append(filteredRecruiters, recruiter)
+	}
+
+	// Pagination
+	page := 1
+	limit := 20
+	if p := r.URL.Query().Get("page"); p != "" {
+		page, _ = strconv.Atoi(p)
+	}
+	if l := r.URL.Query().Get("limit"); l != "" {
+		limit, _ = strconv.Atoi(l)
+	}
+
+	start := (page - 1) * limit
+	end := start + limit
+	if end > len(filteredRecruiters) {
+		end = len(filteredRecruiters)
+	}
+	if start > len(filteredRecruiters) {
+		start = len(filteredRecruiters)
+	}
+
+	result := filteredRecruiters[start:end]
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"recruiters": result,
+		"total":      len(filteredRecruiters),
+		"page":       page,
+		"limit":      limit,
+	})
+}
+
+func getRecruiter(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, _ := strconv.Atoi(vars["id"])
+
+	for _, recruiter := range recruiters {
+		if recruiter.ID == id {
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(recruiter)
+			return
+		}
+	}
+
+	http.Error(w, "Recruiter not found", http.StatusNotFound)
+}
+
+func createRecruiter(w http.ResponseWriter, r *http.Request) {
+	var recruiter Recruiter
+	if err := json.NewDecoder(r.Body).Decode(&recruiter); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	recruiter.ID = len(recruiters) + 1
+	recruiter.CreatedAt = time.Now()
+	recruiter.UpdatedAt = time.Now()
+	recruiters = append(recruiters, recruiter)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(recruiter)
+}
+
+func updateRecruiter(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, _ := strconv.Atoi(vars["id"])
+
+	for i, recruiter := range recruiters {
+		if recruiter.ID == id {
+			var updatedRecruiter Recruiter
+			if err := json.NewDecoder(r.Body).Decode(&updatedRecruiter); err != nil {
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+
+			updatedRecruiter.ID = id
+			updatedRecruiter.UpdatedAt = time.Now()
+			recruiters[i] = updatedRecruiter
+
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(updatedRecruiter)
+			return
+		}
+	}
+
+	http.Error(w, "Recruiter not found", http.StatusNotFound)
+}
+
+func deleteRecruiter(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, _ := strconv.Atoi(vars["id"])
+
+	for i, recruiter := range recruiters {
+		if recruiter.ID == id {
+			recruiters = append(recruiters[:i], recruiters[i+1:]...)
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+	}
+
+	http.Error(w, "Recruiter not found", http.StatusNotFound)
 }

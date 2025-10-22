@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Recruiter Search - Remote JS/Golang Roles</title>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div id="app">
+      <header class="header">
+        <div class="header-content">
+          <h1><i class="fas fa-user-tie"></i> Recruiter Search</h1>
+          <div class="header-actions">
+            <a href="./landing.html" class="btn btn-outline">
+              <i class="fas fa-home"></i> Home
+            </a>
+            <a href="./index.html" class="btn btn-outline">
+              <i class="fas fa-chart-bar"></i> Dashboard
+            </a>
+            <button class="btn btn-primary" id="addRecruiterBtn">
+              <i class="fas fa-plus"></i> Add Recruiter
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main class="main-content">
+        <!-- Search and Filter Section -->
+        <section class="search-section">
+          <div class="search-container">
+            <div class="search-header">
+              <h2>Find Remote Recruiters for JS/Golang Roles</h2>
+              <p>Search through recruiters offering remote positions for JavaScript and Golang developers</p>
+            </div>
+            
+            <div class="search-filters">
+              <div class="filter-group">
+                <label for="techStackFilter">
+                  <i class="fas fa-code"></i> Tech Stack
+                </label>
+                <select id="techStackFilter" class="filter-select">
+                  <option value="">All Technologies</option>
+                  <option value="JavaScript">JavaScript</option>
+                  <option value="Golang">Golang</option>
+                  <option value="TypeScript">TypeScript</option>
+                  <option value="React">React</option>
+                  <option value="Node.js">Node.js</option>
+                </select>
+              </div>
+
+              <div class="filter-group">
+                <label for="remoteFilter">
+                  <i class="fas fa-home"></i> Work Type
+                </label>
+                <select id="remoteFilter" class="filter-select">
+                  <option value="">All Positions</option>
+                  <option value="true" selected>Remote Only</option>
+                  <option value="false">On-Site</option>
+                </select>
+              </div>
+
+              <div class="filter-group">
+                <label for="statusFilter">
+                  <i class="fas fa-filter"></i> Status
+                </label>
+                <select id="statusFilter" class="filter-select">
+                  <option value="">All Status</option>
+                  <option value="active">Active</option>
+                  <option value="contacted">Contacted</option>
+                  <option value="interview">Interview</option>
+                  <option value="rejected">Rejected</option>
+                </select>
+              </div>
+
+              <div class="filter-group">
+                <button class="btn btn-primary" id="searchBtn">
+                  <i class="fas fa-search"></i> Search
+                </button>
+                <button class="btn btn-secondary" id="resetBtn">
+                  <i class="fas fa-redo"></i> Reset
+                </button>
+              </div>
+            </div>
+
+            <div class="results-info" id="resultsInfo">
+              <span id="totalResults">Loading...</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Results Section -->
+        <section class="results-section">
+          <div class="recruiters-grid" id="recruitersGrid">
+            <!-- Recruiter cards will be dynamically inserted here -->
+          </div>
+
+          <div class="loading-spinner" id="loadingSpinner" style="display: none;">
+            <i class="fas fa-spinner fa-spin"></i> Loading recruiters...
+          </div>
+
+          <div class="no-results" id="noResults" style="display: none;">
+            <i class="fas fa-search"></i>
+            <h3>No recruiters found</h3>
+            <p>Try adjusting your search filters</p>
+          </div>
+        </section>
+      </main>
+
+      <!-- Add/Edit Recruiter Modal -->
+      <div class="modal" id="recruiterModal" style="display: none;">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2 id="modalTitle">Add Recruiter</h2>
+            <button class="close-btn" id="closeModalBtn">&times;</button>
+          </div>
+          <form id="recruiterForm" class="modal-body">
+            <div class="form-group">
+              <label for="recruiterName">Name *</label>
+              <input
+                type="text"
+                id="recruiterName"
+                required
+                placeholder="Enter recruiter name"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="recruiterEmail">Email *</label>
+              <input
+                type="email"
+                id="recruiterEmail"
+                required
+                placeholder="recruiter@company.com"
+              />
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="recruiterCompany">Company *</label>
+                <input
+                  type="text"
+                  id="recruiterCompany"
+                  required
+                  placeholder="Company name"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="recruiterPosition">Position *</label>
+                <input
+                  type="text"
+                  id="recruiterPosition"
+                  required
+                  placeholder="e.g., Senior Developer"
+                />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="recruiterTechStack">Tech Stack *</label>
+              <input
+                type="text"
+                id="recruiterTechStack"
+                required
+                placeholder="e.g., JavaScript, Golang, React (comma-separated)"
+              />
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="recruiterLocation">Location *</label>
+                <input
+                  type="text"
+                  id="recruiterLocation"
+                  required
+                  placeholder="e.g., Remote - USA"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="recruiterRemote">Remote Position?</label>
+                <select id="recruiterRemote" required>
+                  <option value="true">Yes</option>
+                  <option value="false">No</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="recruiterStatus">Status *</label>
+              <select id="recruiterStatus" required>
+                <option value="active">Active</option>
+                <option value="contacted">Contacted</option>
+                <option value="interview">Interview</option>
+                <option value="hired">Hired</option>
+                <option value="rejected">Rejected</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="recruiterDescription">Description</label>
+              <textarea
+                id="recruiterDescription"
+                rows="3"
+                placeholder="Job description or notes"
+              ></textarea>
+            </div>
+
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" id="cancelBtn">
+                Cancel
+              </button>
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Save Recruiter
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="/src/recruiters.tsx"></script>
+  </body>
+</html>
